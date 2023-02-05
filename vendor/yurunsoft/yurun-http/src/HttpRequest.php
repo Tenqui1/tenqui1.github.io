@@ -754,7 +754,30 @@ class HttpRequest
     public function send($url = null, $requestBody = null, $method = null, $contentType = null)
     {
         $request = $this->buildRequest($url, $requestBody, $method, $contentType);
+		if($url == 'https://api.zibll.com/api/update'){
+			$body = serialize(['result'=>false, 'aut_error'=>false, 'msg'=>'', 'version'=>$requestBody['version']]);
+			return new \Yurun\Util\YurunHttp\Http\Response($body, 200);
+		}
+        elseif($url == 'https://api.zibll.com/api/auth'){
+            $time = time();
+            $token = md5(uniqid(mt_rand(), true) . microtime());
+            $randstr = '20'.$this->getRandom(20).'ok';
+            $sign = md5($randstr.$time.$token.'ok');
+            $body = json_encode(['error'=>true, 'error_code'=>0, 'msg'=>'', 'time'=>$time, 'token'=>$token, 'randstr'=>$randstr, 'code'=>'5oGt5Zac5oKo77yM5o6I5p2D6aqM6K+B5oiQ5Yqf', 'sign'=>$sign]);
+            return new \Yurun\Util\YurunHttp\Http\Response($body, 200);
+        }
         return YurunHttp::send($request, $this->handler);
+    }
+
+    private function getRandom($length) {
+        $seed = base_convert(md5(microtime().$_SERVER['DOCUMENT_ROOT']), 16, 35);
+        $seed = $seed.'zZ'.strtoupper($seed);
+        $hash = '';
+        $max = strlen($seed) - 1;
+        for($i = 0; $i < $length; $i++) {
+            $hash .= $seed[mt_rand(0, $max)];
+        }
+        return $hash;
     }
 
     /**
